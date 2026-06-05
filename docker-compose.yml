@@ -1,0 +1,12 @@
+services:
+  space-reservation-frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: space-reservation-frontend:latest
+    container_name: space-reservation-frontend
+    ports:
+      - "${FRONTEND_PORT:-3000}:80"
+    environment:
+      API_UPSTREAM: "${API_UPSTREAM:-http://host.docker.internal:8080}"
+    restart: unless-stopped
