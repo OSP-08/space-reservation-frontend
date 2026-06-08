@@ -2,21 +2,21 @@
   <section>
     <div class="page-head">
       <div>
-        <h2 class="page-title">备份管理</h2>
-        <p class="page-subtitle">管理员可以手动执行预约日志备份、查看 Google Drive 文件并清理旧备份。</p>
+        <h2 class="page-title">백업 관리</h2>
+        <p class="page-subtitle">관리자가 예약 로그 백업을 수동으로 실행하고 Google Drive 파일을 확인하며 오래된 백업을 정리할 수 있습니다.</p>
       </div>
       <n-space>
         <n-button secondary :loading="cleanupLoading" @click="cleanup">
           <template #icon>
             <n-icon :component="Trash2" />
           </template>
-          清理旧备份
+          오래된 백업 정리
         </n-button>
         <n-button type="primary" :loading="runLoading" @click="runBackup">
           <template #icon>
             <n-icon :component="UploadCloud" />
           </template>
-          手动备份
+          수동 백업
         </n-button>
       </n-space>
     </div>
@@ -24,12 +24,12 @@
     <n-card :bordered="false">
       <template #header>
         <n-space align="center" justify="space-between">
-          <span>备份文件</span>
+          <span>백업 파일</span>
           <n-button text @click="loadFiles">
             <template #icon>
               <n-icon :component="RefreshCw" />
             </template>
-            刷新
+            새로고침
           </n-button>
         </n-space>
       </template>
@@ -61,12 +61,12 @@ const cleanupLoading = ref(false);
 const files = ref<BackupFile[]>([]);
 
 const columns: DataTableColumns<BackupFile> = [
-  { title: '文件名', key: 'name' },
-  { title: '文件 ID', key: 'id', ellipsis: { tooltip: true } },
-  { title: '创建时间', key: 'createdTime', render: (row) => formatDate(row.createdTime) },
-  { title: '更新时间', key: 'modifiedTime', render: (row) => formatDate(row.modifiedTime) },
+  { title: '파일명', key: 'name' },
+  { title: '파일 ID', key: 'id', ellipsis: { tooltip: true } },
+  { title: '생성 시간', key: 'createdTime', render: (row) => formatDate(row.createdTime) },
+  { title: '수정 시간', key: 'modifiedTime', render: (row) => formatDate(row.modifiedTime) },
   {
-    title: '操作',
+    title: '작업',
     key: 'actions',
     width: 110,
     render: (row) =>
@@ -79,7 +79,7 @@ const columns: DataTableColumns<BackupFile> = [
           disabled: !row.id,
           onClick: () => confirmDelete(row)
         },
-        { default: () => '删除' }
+        { default: () => '삭제' }
       )
   }
 ];
@@ -93,7 +93,7 @@ async function loadFiles() {
   try {
     files.value = await backupApi.files();
   } catch (error) {
-    message.error(errorMessage(error, '备份文件加载失败'));
+    message.error(errorMessage(error, '백업 파일 로드 실패'));
   } finally {
     loading.value = false;
   }
@@ -103,10 +103,10 @@ async function runBackup() {
   runLoading.value = true;
   try {
     const fileId = await backupApi.run();
-    message.success(`备份完成：${fileId}`);
+    message.success(`백업 완료: ${fileId}`);
     await loadFiles();
   } catch (error) {
-    message.error(errorMessage(error, '备份失败'));
+    message.error(errorMessage(error, '백업 실패'));
   } finally {
     runLoading.value = false;
   }
@@ -116,10 +116,10 @@ async function cleanup() {
   cleanupLoading.value = true;
   try {
     await backupApi.cleanup();
-    message.success('旧备份已清理');
+    message.success('오래된 백업이 정리되었습니다');
     await loadFiles();
   } catch (error) {
-    message.error(errorMessage(error, '清理失败'));
+    message.error(errorMessage(error, '정리 실패'));
   } finally {
     cleanupLoading.value = false;
   }
@@ -127,18 +127,18 @@ async function cleanup() {
 
 function confirmDelete(file: BackupFile) {
   dialog.warning({
-    title: '删除备份文件',
-    content: `确定删除 ${file.name || file.id} 吗？`,
-    positiveText: '删除',
-    negativeText: '取消',
+    title: '백업 파일 삭제',
+    content: `${file.name || file.id}을(를) 삭제하시겠습니까?`,
+    positiveText: '삭제',
+    negativeText: '취소',
     onPositiveClick: async () => {
       if (!file.id) return;
       try {
         await backupApi.deleteFile(file.id);
-        message.success('文件已删除');
+        message.success('파일이 삭제되었습니다');
         await loadFiles();
       } catch (error) {
-        message.error(errorMessage(error, '删除失败'));
+        message.error(errorMessage(error, '삭제 실패'));
       }
     }
   });

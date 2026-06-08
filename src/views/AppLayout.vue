@@ -12,7 +12,7 @@
         <div class="brand-mark">
           <n-icon :component="Building2" />
         </div>
-        <span>空间预约</span>
+        <span>공간 예약</span>
       </div>
 
       <n-menu
@@ -80,12 +80,12 @@ function renderLink(label: string, to: string) {
 const menuOptions = computed<MenuOption[]>(() => {
   const options: MenuOption[] = [
     {
-      label: renderLink('空间', '/spaces'),
+      label: renderLink('공간', '/spaces'),
       key: 'spaces',
       icon: renderIcon(Building2)
     },
     {
-      label: renderLink('我的预约', '/reservations'),
+      label: renderLink('내 예약', '/reservations'),
       key: 'reservations',
       icon: renderIcon(CalendarDays)
     }
@@ -93,7 +93,7 @@ const menuOptions = computed<MenuOption[]>(() => {
 
   if (auth.isAdmin) {
     options.push({
-      label: renderLink('备份管理', '/admin/backup'),
+      label: renderLink('백업 관리', '/admin/backup'),
       key: 'backup',
       icon: renderIcon(Archive)
     });
@@ -104,7 +104,7 @@ const menuOptions = computed<MenuOption[]>(() => {
 
 const profileOptions = [
   {
-    label: '退出登录',
+    label: '로그아웃',
     key: 'logout',
     icon: renderIcon(LogOut)
   }
@@ -119,7 +119,7 @@ function go() {
 async function handleProfile(key: string) {
   if (key === 'logout') {
     await auth.logout();
-    message.success('已退出登录');
+    message.success('로그아웃되었습니다');
     await router.push({ name: 'login' });
   }
 }

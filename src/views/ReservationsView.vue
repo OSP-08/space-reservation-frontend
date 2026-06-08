@@ -2,26 +2,26 @@
   <section>
     <div class="page-head">
       <div>
-        <h2 class="page-title">我的预约</h2>
-        <p class="page-subtitle">查看当前账号提交过的空间预约，并取消不再需要的时段。</p>
+        <h2 class="page-title">내 예약</h2>
+        <p class="page-subtitle">현재 계정에서 제출한 공간 예약을 확인하고 더 이상 필요하지 않은 시간대를 취소하세요.</p>
       </div>
       <n-button secondary @click="loadReservations">
         <template #icon>
           <n-icon :component="RefreshCw" />
         </template>
-        刷新
+        새로고침
       </n-button>
     </div>
 
     <div class="metric-grid">
       <n-card size="small">
-        <n-statistic label="预约总数" :value="reservations.length" />
+        <n-statistic label="총 예약 수" :value="reservations.length" />
       </n-card>
       <n-card size="small">
-        <n-statistic label="已确认" :value="confirmedCount" />
+        <n-statistic label="확인됨" :value="confirmedCount" />
       </n-card>
       <n-card size="small">
-        <n-statistic label="已取消" :value="cancelledCount" />
+        <n-statistic label="취소됨" :value="cancelledCount" />
       </n-card>
     </div>
 
@@ -54,23 +54,23 @@ const confirmedCount = computed(() => reservations.value.filter((item) => item.s
 const cancelledCount = computed(() => reservations.value.filter((item) => item.status === 'CANCELLED').length);
 
 const columns: DataTableColumns<Reservation> = [
-  { title: '空间', key: 'spaceName' },
-  { title: '位置', key: 'spaceLocation' },
-  { title: '开始', key: 'startTime', render: (row) => formatDate(row.startTime) },
-  { title: '结束', key: 'endTime', render: (row) => formatDate(row.endTime) },
-  { title: '用途', key: 'purpose' },
+  { title: '공간', key: 'spaceName' },
+  { title: '위치', key: 'spaceLocation' },
+  { title: '시작', key: 'startTime', render: (row) => formatDate(row.startTime) },
+  { title: '종료', key: 'endTime', render: (row) => formatDate(row.endTime) },
+  { title: '용도', key: 'purpose' },
   {
-    title: '状态',
+    title: '상태',
     key: 'status',
     render: (row) =>
       h(
         NTag,
         { type: row.status === 'CONFIRMED' ? 'success' : 'default', bordered: false },
-        { default: () => (row.status === 'CONFIRMED' ? '已确认' : '已取消') }
+        { default: () => (row.status === 'CONFIRMED' ? '확인됨' : '취소됨') }
       )
   },
   {
-    title: '操作',
+    title: '작업',
     key: 'actions',
     width: 120,
     render: (row) =>
@@ -83,7 +83,7 @@ const columns: DataTableColumns<Reservation> = [
           disabled: row.status !== 'CONFIRMED',
           onClick: () => confirmCancel(row)
         },
-        { default: () => '取消预约' }
+        { default: () => '예약 취소' }
       )
   }
 ];
@@ -97,7 +97,7 @@ async function loadReservations() {
   try {
     reservations.value = await reservationsApi.my();
   } catch (error) {
-    message.error(errorMessage(error, '预约加载失败'));
+    message.error(errorMessage(error, '예약 로드 실패'));
   } finally {
     loading.value = false;
   }
@@ -105,17 +105,17 @@ async function loadReservations() {
 
 function confirmCancel(row: Reservation) {
   dialog.warning({
-    title: '取消预约',
-    content: `确定取消 ${row.spaceName} 的预约吗？`,
-    positiveText: '取消预约',
-    negativeText: '保留',
+    title: '예약 취소',
+    content: `${row.spaceName} 예약을 취소하시겠습니까?`,
+    positiveText: '예약 취소',
+    negativeText: '유지',
     onPositiveClick: async () => {
       try {
         await reservationsApi.cancel(row.id);
-        message.success('预约已取消');
+        message.success('예약이 취소되었습니다');
         await loadReservations();
       } catch (error) {
-        message.error(errorMessage(error, '取消失败'));
+        message.error(errorMessage(error, '취소 실패'));
       }
     }
   });

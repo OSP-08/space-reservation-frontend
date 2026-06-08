@@ -42,7 +42,7 @@ export function unwrap<T>(response: { data: ApiResponse<T> }) {
   return response.data.data;
 }
 
-export function errorMessage(error: unknown, fallback = '请求失败，请稍后重试') {
+export function errorMessage(error: unknown, fallback = '요청 실패, 나중에 다시 시도하세요') {
   if (axios.isAxiosError<ApiResponse<unknown>>(error)) {
     return error.response?.data?.message || error.message || fallback;
   }

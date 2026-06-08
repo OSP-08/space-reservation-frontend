@@ -1,54 +1,54 @@
 <template>
   <div class="auth-page">
     <section class="auth-copy">
-      <h1>空间预约系统</h1>
-      <p>集中管理会议室、活动空间和预约时段，让团队知道哪里可用、谁在使用、什么时候可以进入。</p>
+      <h1>공간 예약 시스템</h1>
+      <p>회의실, 활동 공간 및 예약 시간대를 중앙 관리하여 팀이 어디를 사용할 수 있는지, 누가 사용 중인지, 언제 입장할 수 있는지 알 수 있습니다.</p>
     </section>
 
     <section class="auth-panel">
       <n-card class="auth-card" :bordered="false">
         <n-tabs v-model:value="mode" size="large" animated>
-          <n-tab-pane name="login" tab="登录">
+          <n-tab-pane name="login" tab="로그인">
             <n-form ref="loginFormRef" :model="loginForm" :rules="loginRules" size="large">
-              <n-form-item path="email" label="邮箱">
+              <n-form-item path="email" label="이메일">
                 <n-input v-model:value="loginForm.email" placeholder="name@example.com" />
               </n-form-item>
-              <n-form-item path="password" label="密码">
+              <n-form-item path="password" label="비밀번호">
                 <n-input
                   v-model:value="loginForm.password"
-                  placeholder="请输入密码"
+                  placeholder="비밀번호를 입력하세요"
                   type="password"
                   show-password-on="click"
                   @keyup.enter="submitLogin"
                 />
               </n-form-item>
               <n-button type="primary" block size="large" :loading="loading" @click="submitLogin">
-                登录
+                로그인
               </n-button>
             </n-form>
           </n-tab-pane>
 
-          <n-tab-pane name="signup" tab="注册">
+          <n-tab-pane name="signup" tab="회원가입">
             <n-form ref="signupFormRef" :model="signupForm" :rules="signupRules" size="large">
-              <n-form-item path="email" label="邮箱">
+              <n-form-item path="email" label="이메일">
                 <n-input v-model:value="signupForm.email" placeholder="name@example.com" />
               </n-form-item>
-              <n-form-item path="name" label="姓名">
-                <n-input v-model:value="signupForm.name" placeholder="请输入姓名" />
+              <n-form-item path="name" label="이름">
+                <n-input v-model:value="signupForm.name" placeholder="이름을 입력하세요" />
               </n-form-item>
-              <n-form-item path="organization" label="组织">
-                <n-input v-model:value="signupForm.organization" placeholder="可选" />
+              <n-form-item path="organization" label="조직">
+                <n-input v-model:value="signupForm.organization" placeholder="선택사항" />
               </n-form-item>
-              <n-form-item path="password" label="密码">
+              <n-form-item path="password" label="비밀번호">
                 <n-input
                   v-model:value="signupForm.password"
-                  placeholder="至少 8 位"
+                  placeholder="최소 8자"
                   type="password"
                   show-password-on="click"
                 />
               </n-form-item>
               <n-button type="primary" block size="large" :loading="loading" @click="submitSignup">
-                创建账号
+                계정 생성
               </n-button>
             </n-form>
           </n-tab-pane>
@@ -87,19 +87,19 @@ const signupForm = reactive({
 
 const loginRules: FormRules = {
   email: [
-    { required: true, message: '请输入邮箱', trigger: ['input', 'blur'] },
-    { type: 'email', message: '邮箱格式不正确', trigger: ['input', 'blur'] }
+    { required: true, message: '이메일을 입력하세요', trigger: ['input', 'blur'] },
+    { type: 'email', message: '이메일 형식이 올바르지 않습니다', trigger: ['input', 'blur'] }
   ],
-  password: [{ required: true, message: '请输入密码', trigger: ['input', 'blur'] }]
+  password: [{ required: true, message: '비밀번호를 입력하세요', trigger: ['input', 'blur'] }]
 };
 
 const signupRules: FormRules = {
   ...loginRules,
   password: [
-    { required: true, message: '请输入密码', trigger: ['input', 'blur'] },
-    { min: 8, message: '密码至少 8 位', trigger: ['input', 'blur'] }
+    { required: true, message: '비밀번호를 입력하세요', trigger: ['input', 'blur'] },
+    { min: 8, message: '비밀번호는 최소 8자 이상이어야 합니다', trigger: ['input', 'blur'] }
   ],
-  name: [{ required: true, message: '请输入姓名', trigger: ['input', 'blur'] }]
+  name: [{ required: true, message: '이름을 입력하세요', trigger: ['input', 'blur'] }]
 };
 
 async function submitLogin() {
@@ -107,10 +107,10 @@ async function submitLogin() {
   loading.value = true;
   try {
     await auth.login(loginForm);
-    message.success('登录成功');
+    message.success('로그인 성공');
     await router.push({ name: 'spaces' });
   } catch (error) {
-    message.error(errorMessage(error, '登录失败'));
+    message.error(errorMessage(error, '로그인 실패'));
   } finally {
     loading.value = false;
   }
@@ -121,12 +121,12 @@ async function submitSignup() {
   loading.value = true;
   try {
     await auth.signUp(signupForm);
-    message.success('注册成功，请登录');
+    message.success('회원가입 성공, 로그인하세요');
     mode.value = 'login';
     loginForm.email = signupForm.email;
     loginForm.password = signupForm.password;
   } catch (error) {
-    message.error(errorMessage(error, '注册失败'));
+    message.error(errorMessage(error, '회원가입 실패'));
   } finally {
     loading.value = false;
   }
