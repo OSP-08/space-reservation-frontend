@@ -1,8 +1,8 @@
 <template>
   <div class="auth-page">
     <section class="auth-copy">
-      <h1>공간 예약 시스템</h1>
-      <p>회의실, 활동 공간 및 예약 시간대를 중앙 관리하여 팀이 어디를 사용할 수 있는지, 누가 사용 중인지, 언제 입장할 수 있는지 알 수 있습니다.</p>
+      <h1>캠퍼스 공간 예약 시스템</h1>
+      <p>교내 건물의 소형 회의실과 개인 좌석을 간편하게 예약하세요. 예약 가능 시간은 오전 9시 ~ 오후 9시이며, 1회 최대 2시간까지 이용 가능합니다.</p>
     </section>
 
     <section class="auth-panel">
@@ -108,7 +108,7 @@ async function submitLogin() {
   try {
     await auth.login(loginForm);
     message.success('로그인 성공');
-    await router.push({ name: 'spaces' });
+    await router.push({ name: 'buildings' });
   } catch (error) {
     message.error(errorMessage(error, '로그인 실패'));
   } finally {

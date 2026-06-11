@@ -24,6 +24,8 @@ export interface TokenResponse {
   role: string;
 }
 
+export type SpaceType = 'MEETING_ROOM' | 'INDIVIDUAL_SEAT';
+
 export interface Space {
   id: number;
   name: string;
@@ -32,6 +34,8 @@ export interface Space {
   location?: string;
   facilities?: string;
   status: 'AVAILABLE' | 'UNAVAILABLE';
+  spaceType?: SpaceType;
+  building?: string;
   createdAt: string;
 }
 
@@ -41,6 +45,8 @@ export interface SpaceRequest {
   capacity: number;
   location?: string;
   facilities?: string;
+  spaceType?: SpaceType;
+  building?: string;
 }
 
 export interface Reservation {

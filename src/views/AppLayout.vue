@@ -12,7 +12,7 @@
         <div class="brand-mark">
           <n-icon :component="Building2" />
         </div>
-        <span>공간 예약</span>
+        <span>캠퍼스 예약</span>
       </div>
 
       <n-menu
@@ -67,7 +67,12 @@ const collapsed = ref(false);
 const width = ref(window.innerWidth);
 
 const isMobile = computed(() => width.value < 860);
-const activeKey = computed(() => String(route.name || 'spaces'));
+const activeKey = computed(() => {
+  const name = String(route.name || 'buildings');
+  // 건물 관련 페이지는 모두 'buildings' 키로 활성화
+  if (name === 'building-detail' || name === 'spaces') return 'buildings';
+  return name;
+});
 
 function renderIcon(icon: Component) {
   return () => h(NIcon, null, { default: () => h(icon) });
@@ -80,8 +85,8 @@ function renderLink(label: string, to: string) {
 const menuOptions = computed<MenuOption[]>(() => {
   const options: MenuOption[] = [
     {
-      label: renderLink('공간', '/spaces'),
-      key: 'spaces',
+      label: renderLink('공간 예약', '/buildings'),
+      key: 'buildings',
       icon: renderIcon(Building2)
     },
     {
