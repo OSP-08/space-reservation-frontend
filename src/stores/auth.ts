@@ -1,16 +1,14 @@
 import { defineStore } from 'pinia';
 import { computed, ref } from 'vue';
 import { authApi } from '@/api/auth';
-import type { LoginRequest, SignUpRequest, TokenResponse } from '@/api/types';
+import type { LoginRequest, SignUpRequest, UserProfile } from '@/api/types';
 
 const ACCESS_TOKEN = 'accessToken';
-const REFRESH_TOKEN = 'refreshToken';
 const USER_PROFILE = 'userProfile';
 
 export const useAuthStore = defineStore('auth', () => {
   const accessToken = ref(localStorage.getItem(ACCESS_TOKEN) || '');
-  const refreshToken = ref(localStorage.getItem(REFRESH_TOKEN) || '');
-  const user = ref<Pick<TokenResponse, 'email' | 'name' | 'role'> | null>(
+  const user = ref<UserProfile | null>(
     JSON.parse(localStorage.getItem(USER_PROFILE) || 'null')
   );
 
@@ -20,32 +18,28 @@ export const useAuthStore = defineStore('auth', () => {
     return role === 'ADMIN' || role === 'ROLE_ADMIN';
   });
 
-  function setSession(token: TokenResponse) {
-    accessToken.value = token.accessToken;
-    refreshToken.value = token.refreshToken;
-    user.value = {
-      email: token.email,
-      name: token.name,
-      role: token.role
-    };
+  function setToken(token: string) {
+    accessToken.value = token;
+    localStorage.setItem(ACCESS_TOKEN, token);
+  }
 
-    localStorage.setItem(ACCESS_TOKEN, token.accessToken);
-    localStorage.setItem(REFRESH_TOKEN, token.refreshToken);
-    localStorage.setItem(USER_PROFILE, JSON.stringify(user.value));
+  function setUser(profile: UserProfile) {
+    user.value = profile;
+    localStorage.setItem(USER_PROFILE, JSON.stringify(profile));
   }
 
   function clearSession() {
     accessToken.value = '';
-    refreshToken.value = '';
     user.value = null;
     localStorage.removeItem(ACCESS_TOKEN);
-    localStorage.removeItem(REFRESH_TOKEN);
     localStorage.removeItem(USER_PROFILE);
   }
 
   async function login(payload: LoginRequest) {
     const token = await authApi.login(payload);
-    setSession(token);
+    setToken(token.accessToken);
+    const profile = await authApi.getMe();
+    setUser(profile);
   }
 
   async function signUp(payload: SignUpRequest) {
@@ -62,11 +56,11 @@ export const useAuthStore = defineStore('auth', () => {
 
   return {
     accessToken,
-    refreshToken,
     user,
     isAuthenticated,
     isAdmin,
-    setSession,
+    setToken,
+    setUser,
     clearSession,
     login,
     signUp,
