@@ -1,17 +1,15 @@
 import { http, unwrap } from './http';
-import type { BackupFile } from './types';
+
+interface BackupResult {
+  result: string;
+}
 
 export const backupApi = {
+  // 백엔드는 백업 실행 엔드포인트만 제공: POST /api/admin/backup → { result }
   run() {
-    return http.post('/api/admin/backup/run').then(unwrap<string>);
-  },
-  files() {
-    return http.get('/api/admin/backup/files').then(unwrap<BackupFile[]>);
-  },
-  cleanup() {
-    return http.delete('/api/admin/backup/cleanup').then(unwrap<void>);
-  },
-  deleteFile(fileId: string) {
-    return http.delete(`/api/admin/backup/files/${fileId}`).then(unwrap<void>);
+    return http
+      .post<BackupResult>('/api/admin/backup')
+      .then(unwrap<BackupResult>)
+      .then((res) => res.result);
   }
 };

@@ -1,16 +1,23 @@
 import { defineStore } from 'pinia';
 import { computed, ref } from 'vue';
 import { authApi } from '@/api/auth';
-import type { LoginRequest, SignUpRequest, TokenResponse } from '@/api/types';
+import type { LoginRequest, SignUpRequest, TokenResponse, UserResponse } from '@/api/types';
 
 const ACCESS_TOKEN = 'accessToken';
-const REFRESH_TOKEN = 'refreshToken';
 const USER_PROFILE = 'userProfile';
+
+interface StoredUser {
+  id?: number;
+  username?: string;
+  email?: string;
+  name?: string;
+  affiliation?: string;
+  role?: string;
+}
 
 export const useAuthStore = defineStore('auth', () => {
   const accessToken = ref(localStorage.getItem(ACCESS_TOKEN) || '');
-  const refreshToken = ref(localStorage.getItem(REFRESH_TOKEN) || '');
-  const user = ref<Pick<TokenResponse, 'email' | 'name' | 'role'> | null>(
+  const user = ref<StoredUser | null>(
     JSON.parse(localStorage.getItem(USER_PROFILE) || 'null')
   );
 
@@ -20,32 +27,41 @@ export const useAuthStore = defineStore('auth', () => {
     return role === 'ADMIN' || role === 'ROLE_ADMIN';
   });
 
-  function setSession(token: TokenResponse) {
+  function setToken(token: TokenResponse) {
     accessToken.value = token.accessToken;
-    refreshToken.value = token.refreshToken;
-    user.value = {
-      email: token.email,
-      name: token.name,
-      role: token.role
-    };
-
     localStorage.setItem(ACCESS_TOKEN, token.accessToken);
-    localStorage.setItem(REFRESH_TOKEN, token.refreshToken);
+  }
+
+  function setUser(profile: UserResponse) {
+    user.value = {
+      id: profile.id,
+      username: profile.username,
+      email: profile.email,
+      name: profile.name,
+      affiliation: profile.affiliation,
+      role: profile.role
+    };
     localStorage.setItem(USER_PROFILE, JSON.stringify(user.value));
   }
 
   function clearSession() {
     accessToken.value = '';
-    refreshToken.value = '';
     user.value = null;
     localStorage.removeItem(ACCESS_TOKEN);
-    localStorage.removeItem(REFRESH_TOKEN);
     localStorage.removeItem(USER_PROFILE);
   }
 
   async function login(payload: LoginRequest) {
     const token = await authApi.login(payload);
-    setSession(token);
+    setToken(token);
+    // 백엔드 TokenResponse 에는 사용자 정보가 없으므로 /api/users/me 로 보강
+    try {
+      const profile = await authApi.me();
+      setUser(profile);
+    } catch (error) {
+      clearSession();
+      throw error;
+    }
   }
 
   async function signUp(payload: SignUpRequest) {
@@ -53,20 +69,17 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   async function logout() {
-    try {
-      await authApi.logout();
-    } finally {
-      clearSession();
-    }
+    // 백엔드에 로그아웃 엔드포인트는 없음 (stateless JWT). 클라이언트에서만 정리.
+    clearSession();
   }
 
   return {
     accessToken,
-    refreshToken,
     user,
     isAuthenticated,
     isAdmin,
-    setSession,
+    setToken,
+    setUser,
     clearSession,
     login,
     signUp,

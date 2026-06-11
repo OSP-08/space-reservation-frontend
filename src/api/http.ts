@@ -1,7 +1,6 @@
 import axios, { AxiosError } from 'axios';
 import router from '@/router';
 import { useAuthStore } from '@/stores/auth';
-import type { ApiResponse } from './types';
 
 export const http = axios.create({
   baseURL: '/',
@@ -21,9 +20,16 @@ http.interceptors.request.use((config) => {
   return config;
 });
 
+interface BackendErrorResponse {
+  code?: string;
+  message?: string;
+  status?: number;
+  timestamp?: string;
+}
+
 http.interceptors.response.use(
   (response) => response,
-  async (error: AxiosError<ApiResponse<unknown>>) => {
+  async (error: AxiosError<BackendErrorResponse>) => {
     const status = error.response?.status;
 
     if (status === 401) {
@@ -38,12 +44,13 @@ http.interceptors.response.use(
   }
 );
 
-export function unwrap<T>(response: { data: ApiResponse<T> }) {
-  return response.data.data;
+// 백엔드(Spring Boot)는 본문을 JSON 그대로 반환. 별도 래퍼 없음.
+export function unwrap<T>(response: { data: T }): T {
+  return response.data;
 }
 
 export function errorMessage(error: unknown, fallback = '요청 실패, 나중에 다시 시도하세요') {
-  if (axios.isAxiosError<ApiResponse<unknown>>(error)) {
+  if (axios.isAxiosError<BackendErrorResponse>(error)) {
     return error.response?.data?.message || error.message || fallback;
   }
   return fallback;

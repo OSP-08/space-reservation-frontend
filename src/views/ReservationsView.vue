@@ -55,10 +55,9 @@ const cancelledCount = computed(() => reservations.value.filter((item) => item.s
 
 const columns: DataTableColumns<Reservation> = [
   { title: '공간', key: 'spaceName' },
-  { title: '위치', key: 'spaceLocation' },
+  { title: '예약자', key: 'userName' },
   { title: '시작', key: 'startTime', render: (row) => formatDate(row.startTime) },
   { title: '종료', key: 'endTime', render: (row) => formatDate(row.endTime) },
-  { title: '용도', key: 'purpose' },
   {
     title: '상태',
     key: 'status',

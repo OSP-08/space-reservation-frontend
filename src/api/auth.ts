@@ -1,23 +1,30 @@
 import { http, unwrap } from './http';
-import type { LoginRequest, SignUpRequest, TokenResponse } from './types';
+import type {
+  BackendTokenResponse,
+  LoginRequest,
+  SignUpRequest,
+  TokenResponse,
+  UserResponse
+} from './types';
 
 export const authApi = {
   signUp(payload: SignUpRequest) {
-    return http.post('/api/auth/signup', payload).then(unwrap<void>);
-  },
-  login(payload: LoginRequest) {
-    return http.post('/api/auth/login', payload).then(unwrap<TokenResponse>);
-  },
-  reissue(refreshToken: string) {
     return http
-      .post('/api/auth/reissue', undefined, {
-        headers: {
-          'Refresh-Token': refreshToken
-        }
+      .post<UserResponse>('/api/auth/signup', {
+        username: payload.username,
+        password: payload.password,
+        name: payload.name,
+        email: payload.email,
+        affiliation: payload.affiliation
       })
-      .then(unwrap<TokenResponse>);
+      .then(unwrap<UserResponse>);
   },
-  logout() {
-    return http.post('/api/auth/logout').then(unwrap<void>);
+  login(payload: LoginRequest): Promise<TokenResponse> {
+    return http
+      .post<BackendTokenResponse>('/api/auth/login', payload)
+      .then(unwrap<BackendTokenResponse>);
+  },
+  me() {
+    return http.get<UserResponse>('/api/users/me').then(unwrap<UserResponse>);
   }
 };
