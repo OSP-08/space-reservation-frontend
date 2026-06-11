@@ -5,30 +5,22 @@ export interface ApiResponse<T> {
 }
 
 export interface LoginRequest {
-  username: string;
+  email: string;
   password: string;
 }
 
-export interface SignUpRequest {
-  username: string;
-  password: string;
+export interface SignUpRequest extends LoginRequest {
   name: string;
-  email?: string;
-  affiliation?: string;
+  organization?: string;
 }
 
 export interface TokenResponse {
   accessToken: string;
+  refreshToken: string;
   tokenType: string;
-  expiresInMs: number;
-}
-
-export interface UserProfile {
-  id: number;
-  username: string;
+  expiresIn: number;
+  email: string;
   name: string;
-  email?: string;
-  affiliation?: string;
   role: string;
 }
 
