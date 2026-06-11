@@ -39,7 +39,7 @@
               <template #icon>
                 <n-icon :component="UserRound" />
               </template>
-              {{ auth.user?.name || auth.user?.email }}
+              {{ auth.user?.name || auth.user?.username }}
             </n-button>
           </n-dropdown>
         </n-space>

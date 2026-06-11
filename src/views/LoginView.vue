@@ -10,8 +10,8 @@
         <n-tabs v-model:value="mode" size="large" animated>
           <n-tab-pane name="login" tab="로그인">
             <n-form ref="loginFormRef" :model="loginForm" :rules="loginRules" size="large">
-              <n-form-item path="email" label="이메일">
-                <n-input v-model:value="loginForm.email" placeholder="name@example.com" />
+              <n-form-item path="username" label="아이디">
+                <n-input v-model:value="loginForm.username" placeholder="사용자 아이디" />
               </n-form-item>
               <n-form-item path="password" label="비밀번호">
                 <n-input
@@ -30,19 +30,22 @@
 
           <n-tab-pane name="signup" tab="회원가입">
             <n-form ref="signupFormRef" :model="signupForm" :rules="signupRules" size="large">
-              <n-form-item path="email" label="이메일">
-                <n-input v-model:value="signupForm.email" placeholder="name@example.com" />
+              <n-form-item path="username" label="아이디">
+                <n-input v-model:value="signupForm.username" placeholder="4자 이상" />
               </n-form-item>
               <n-form-item path="name" label="이름">
                 <n-input v-model:value="signupForm.name" placeholder="이름을 입력하세요" />
               </n-form-item>
-              <n-form-item path="organization" label="조직">
-                <n-input v-model:value="signupForm.organization" placeholder="선택사항" />
+              <n-form-item path="email" label="이메일">
+                <n-input v-model:value="signupForm.email" placeholder="name@example.com" />
+              </n-form-item>
+              <n-form-item path="affiliation" label="소속">
+                <n-input v-model:value="signupForm.affiliation" placeholder="예: 컴퓨터학부 (선택)" />
               </n-form-item>
               <n-form-item path="password" label="비밀번호">
                 <n-input
                   v-model:value="signupForm.password"
-                  placeholder="최소 8자"
+                  placeholder="최소 4자"
                   type="password"
                   show-password-on="click"
                 />
@@ -74,32 +77,36 @@ const loginFormRef = ref<FormInst | null>(null);
 const signupFormRef = ref<FormInst | null>(null);
 
 const loginForm = reactive({
-  email: '',
+  username: '',
   password: ''
 });
 
 const signupForm = reactive({
-  email: '',
+  username: '',
   password: '',
   name: '',
-  organization: ''
+  email: '',
+  affiliation: ''
 });
 
 const loginRules: FormRules = {
-  email: [
-    { required: true, message: '이메일을 입력하세요', trigger: ['input', 'blur'] },
-    { type: 'email', message: '이메일 형식이 올바르지 않습니다', trigger: ['input', 'blur'] }
-  ],
+  username: [{ required: true, message: '아이디를 입력하세요', trigger: ['input', 'blur'] }],
   password: [{ required: true, message: '비밀번호를 입력하세요', trigger: ['input', 'blur'] }]
 };
 
 const signupRules: FormRules = {
-  ...loginRules,
+  username: [
+    { required: true, message: '아이디를 입력하세요', trigger: ['input', 'blur'] },
+    { min: 4, message: '아이디는 최소 4자 이상이어야 합니다', trigger: ['input', 'blur'] }
+  ],
   password: [
     { required: true, message: '비밀번호를 입력하세요', trigger: ['input', 'blur'] },
-    { min: 8, message: '비밀번호는 최소 8자 이상이어야 합니다', trigger: ['input', 'blur'] }
+    { min: 4, message: '비밀번호는 최소 4자 이상이어야 합니다', trigger: ['input', 'blur'] }
   ],
-  name: [{ required: true, message: '이름을 입력하세요', trigger: ['input', 'blur'] }]
+  name: [{ required: true, message: '이름을 입력하세요', trigger: ['input', 'blur'] }],
+  email: [
+    { type: 'email', message: '이메일 형식이 올바르지 않습니다', trigger: ['input', 'blur'] }
+  ]
 };
 
 async function submitLogin() {
@@ -123,7 +130,7 @@ async function submitSignup() {
     await auth.signUp(signupForm);
     message.success('회원가입 성공, 로그인하세요');
     mode.value = 'login';
-    loginForm.email = signupForm.email;
+    loginForm.username = signupForm.username;
     loginForm.password = signupForm.password;
   } catch (error) {
     message.error(errorMessage(error, '회원가입 실패'));

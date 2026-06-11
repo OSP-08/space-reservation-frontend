@@ -131,8 +131,16 @@
             <n-input v-model:value="spaceForm.location" placeholder="예: 3층 301호" />
           </n-form-item-gi>
         </n-grid>
-        <n-form-item label="시설" path="facilities">
-          <n-input v-model:value="spaceForm.facilities" placeholder="프로젝터, 화이트보드, 화상 회의" />
+        <n-form-item label="시설" path="facilityIds">
+          <n-select
+            v-model:value="spaceForm.facilityIds"
+            multiple
+            filterable
+            tag
+            :options="facilityOptions"
+            placeholder="시설을 선택하거나 입력 후 Enter"
+            @create="onCreateFacility"
+          />
         </n-form-item>
       </n-form>
       <template #footer>
@@ -171,9 +179,6 @@
             style="width:100%"
           />
         </n-form-item>
-        <n-form-item label="용도" path="purpose">
-          <n-input v-model:value="reservationFormModel.purpose" type="textarea" placeholder="회의, 스터디 또는 사용 설명" />
-        </n-form-item>
       </n-form>
       <template #footer>
         <n-space justify="end">
@@ -198,7 +203,8 @@ import { CalendarPlus, Clock3, Pencil, Plus, Power, Search } from '@lucide/vue'
 import { errorMessage } from '@/api/http'
 import { reservationsApi } from '@/api/reservations'
 import { spacesApi } from '@/api/spaces'
-import type { Reservation, ReservationRequest, Space, SpaceRequest, SpaceType } from '@/api/types'
+import { facilitiesApi } from '@/api/facilities'
+import type { FacilityResponse, Reservation, ReservationRequest, Space, SpaceRequest, SpaceType } from '@/api/types'
 import { useAuthStore } from '@/stores/auth'
 import { CAMPUS_BUILDINGS, getBuildingById } from '@/config/buildings'
 
@@ -254,9 +260,38 @@ const spaceForm = reactive<SpaceRequest>({
   capacity: 1,
   location: '',
   facilities: '',
+  facilityIds: [],
   spaceType: spaceTypeParam,
   building: buildingId
 })
+
+// 관리자 시설 목록 (백엔드: GET /api/admin/facilities)
+const facilities = ref<FacilityResponse[]>([])
+const facilityOptions = computed(() =>
+  facilities.value.map((f) => ({ label: f.name, value: f.id }))
+)
+
+async function loadFacilities() {
+  if (!auth.isAdmin) return
+  try {
+    facilities.value = await facilitiesApi.list()
+  } catch (error) {
+    // 시설 목록은 선택 사항 — 실패해도 폼은 동작
+    console.warn('facilities load failed', error)
+  }
+}
+
+async function onCreateFacility(name: string) {
+  if (!auth.isAdmin) return
+  try {
+    const created = await facilitiesApi.create(name)
+    facilities.value = [...facilities.value, created]
+    const ids = spaceForm.facilityIds || []
+    if (!ids.includes(created.id)) spaceForm.facilityIds = [...ids, created.id]
+  } catch (error) {
+    message.error(errorMessage(error, '시설 생성 실패'))
+  }
+}
 
 const reservationForm = reactive<ReservationRequest>({
   spaceId: 0,
@@ -330,13 +365,12 @@ const scheduleColumns: DataTableColumns<Reservation> = [
   { title: '예약자', key: 'userName' },
   { title: '시작', key: 'startTime', render: (row) => formatDate(row.startTime) },
   { title: '종료', key: 'endTime', render: (row) => formatDate(row.endTime) },
-  { title: '용도', key: 'purpose' },
   {
     title: '상태',
     key: 'status',
     render: (row) =>
       h(NTag, { type: row.status === 'CONFIRMED' ? 'success' : 'default', bordered: false },
-        { default: () => (row.status === 'CONFIRMED' ? '확인됨' : '취소됨') })
+        { default: () => (row.status === 'CONFIRMED' ? '점유 중' : '취소됨') })
   }
 ]
 
@@ -382,9 +416,11 @@ function openSpaceForm(space?: Space) {
     capacity: space?.capacity || 1,
     location: space?.location || '',
     facilities: space?.facilities || '',
+    facilityIds: space?.facilityIds ? [...space.facilityIds] : [],
     spaceType: space?.spaceType || spaceTypeParam || undefined,
     building: space?.building || buildingId || undefined
   })
+  loadFacilities()
   spaceModalVisible.value = true
 }
 
@@ -450,8 +486,7 @@ async function saveReservation() {
   const payload: ReservationRequest = {
     spaceId: reservationForm.spaceId,
     startTime: normalizeDateTime(formatDateTimeLocal(sd)),
-    endTime: normalizeDateTime(formatDateTimeLocal(ed)),
-    purpose: reservationFormModel.purpose
+    endTime: normalizeDateTime(formatDateTimeLocal(ed))
   }
   savingReservation.value = true
   try {
