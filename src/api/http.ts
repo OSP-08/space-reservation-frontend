@@ -2,9 +2,10 @@ import axios, { AxiosError } from 'axios';
 import router from '@/router';
 import { useAuthStore } from '@/stores/auth';
 
+const API_BASE = import.meta.env.VITE_API_URL || '/';
 export const http = axios.create({
-  baseURL: '/',
-  timeout: 15000,
+  baseURL: API_BASE,
+  timeout: 60000,
   headers: {
     'Content-Type': 'application/json'
   }
